@@ -39,7 +39,7 @@ server.post<{ Body: GenerateRequest }>('/generate', async (request, reply) => {
   })
 
   // Return a simple response
-  return { message: 'Hello from backend!' }
+  return { message: 'Hello from backend! Dogs and cats' }
 })
 
 // Start the server

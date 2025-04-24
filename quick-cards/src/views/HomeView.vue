@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import axios from 'axios'
-import { API_ENDPOINTS } from '@/config'
 
 const DEFAULT_DECK_NAME = 'my_new_anki_deck'
 const inputTextName = ref(DEFAULT_DECK_NAME)
@@ -21,9 +20,8 @@ const handleSubmit = async () => {
 
   isLoading.value = true
   
-  // Execution of API call upon submission 
   try {
-    const response = await axios.post(API_ENDPOINTS.GENERATE, {
+    const response = await axios.post('http://localhost:3000/generate', {
       deckName: inputTextName.value.trim() || DEFAULT_DECK_NAME,
       words: inputTextWords.value.trim(),
       targetLanguage: targetLanguage.value,
