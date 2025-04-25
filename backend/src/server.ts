@@ -1,7 +1,7 @@
 import fastify from 'fastify'
 import cors from '@fastify/cors'
 import dotenv from 'dotenv'
-import { generateRoutes } from './routes/generateRoutes'
+import { generateCardsRoutes } from './routes/generateRoutes'
 
 // Load environment variables
 dotenv.config()
@@ -18,7 +18,7 @@ server.register(cors, {
 })
 
 // Register routes
-server.register(generateRoutes, { prefix: '' })
+server.register(generateCardsRoutes)
 
 // Start the server
 const start = async () => {

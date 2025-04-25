@@ -1,11 +1,11 @@
 import { FastifyInstance } from 'fastify'
-import { GenerateController } from '../controllers/generateController'
-import { GenerateRequest } from '../models/generateRequest'
+import { GenerateCardsController } from '../controllers/generateController'
+import { GenerateCardsRequest } from '../models/generateRequest'
 
-export async function generateRoutes(fastify: FastifyInstance) {
-  const generateController = new GenerateController()
+export async function generateCardsRoutes(fastify: FastifyInstance) {
+  const generateCardsController = new GenerateCardsController()
 
-  fastify.post<{ Body: GenerateRequest }>('/generate', (request, reply) => {
-    return generateController.handleGenerate(request, reply)
+  fastify.post<{ Body: GenerateCardsRequest }>('/generate-cards', (request, reply) => {
+    return generateCardsController.handleGenerateCards(request, reply)
   })
 } 

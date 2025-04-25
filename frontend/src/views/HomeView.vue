@@ -8,7 +8,7 @@ import { API_ENDPOINTS } from '@/config'
 const DEFAULT_DECK_NAME = 'my_new_anki_deck'
 const inputTextName = ref(DEFAULT_DECK_NAME)
 const inputTextWords = ref('')
-const targetLanguage = ref('Portuguese')
+const targetLanguage = ref('Portuguese (Brazil)')
 const sourceLanguage = ref('English')
 const isSpicyMode = ref(true)
 const isLoading = ref(false)
@@ -23,7 +23,7 @@ const handleSubmit = async () => {
   
   // Execution of API call upon submission 
   try {
-    const response = await axios.post(API_ENDPOINTS.GENERATE, {
+    const response = await axios.post(API_ENDPOINTS.GENERATE_CARDS, {
       deckName: inputTextName.value.trim() || DEFAULT_DECK_NAME,
       words: inputTextWords.value.trim(),
       targetLanguage: targetLanguage.value,
@@ -75,7 +75,7 @@ const handleSubmit = async () => {
         <el-form-item label="Target Language">
           <el-select v-model="targetLanguage" placeholder="Select language">
             <el-option label="Spanish" value="Spanish" />
-            <el-option label="Portuguese" value="Portuguese" />
+            <el-option label="Portuguese (Brazil)" value="Portuguese (Brazil)" />
             <el-option label="English" value="English" />
           </el-select>
         </el-form-item>
@@ -83,7 +83,7 @@ const handleSubmit = async () => {
         <el-form-item label="Source Language">
           <el-select v-model="sourceLanguage" placeholder="Select language">
             <el-option label="Spanish" value="Spanish" />
-            <el-option label="Portuguese" value="Portuguese" />
+            <el-option label="Portuguese (Brazil)" value="Portuguese (Brazil)" />
             <el-option label="English" value="English" />
           </el-select>
         </el-form-item>

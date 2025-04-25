@@ -9,7 +9,6 @@ const inputTextName = ref(DEFAULT_DECK_NAME)
 const inputTextWords = ref('')
 const targetLanguage = ref('Portuguese')
 const sourceLanguage = ref('English')
-const isSpicyMode = ref(true)
 const isLoading = ref(false)
 
 const handleSubmit = async () => {
@@ -25,8 +24,7 @@ const handleSubmit = async () => {
       deckName: inputTextName.value.trim() || DEFAULT_DECK_NAME,
       words: inputTextWords.value.trim(),
       targetLanguage: targetLanguage.value,
-      sourceLanguage: sourceLanguage.value,
-      isSpicyMode: isSpicyMode.value
+      sourceLanguage: sourceLanguage.value
     })
     
     console.log('Backend response:', response.data)
@@ -84,14 +82,6 @@ const handleSubmit = async () => {
             <el-option label="Portuguese" value="Portuguese" />
             <el-option label="English" value="English" />
           </el-select>
-        </el-form-item>
-
-        <el-form-item label="Mode">
-          <el-switch
-            v-model="isSpicyMode"
-            active-text="Spicy Mode 🌶️"
-            inactive-text=""
-          />
         </el-form-item>
         
         <el-form-item>

@@ -1,20 +1,20 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { GenerateRequest } from '../models/generateRequest'
-import { GenerateService } from '../services/generateService'
+import { GenerateCardsRequest } from '../models/generateRequest'
+import { GenerateCardsService } from '../services/generateService'
 
-export class GenerateController {
-  private generateService: GenerateService
+export class GenerateCardsController {
+  private generateService: GenerateCardsService
 
   constructor() {
-    this.generateService = new GenerateService()
+    this.generateService = new GenerateCardsService()
   }
 
-  async handleGenerate(request: FastifyRequest<{ Body: GenerateRequest }>, reply: FastifyReply) {
+  async handleGenerateCards(request: FastifyRequest<{ Body: GenerateCardsRequest }>, reply: FastifyReply) {
     try {
-      const result = await this.generateService.processRequest(request.body)
+      const result = await this.generateService.generateAnkiCards(request.body)
       return reply.send(result)
     } catch (error) {
-      console.error('Error processing generate request:', error)
+      console.error('Error processing generate cards request:', error)
       return reply.status(500).send({ error: 'Internal server error' })
     }
   }

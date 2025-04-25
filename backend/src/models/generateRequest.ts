@@ -1,7 +1,7 @@
-export interface GenerateRequest {
+export interface GenerateCardsRequest {
   deckName: string
   words: string
   targetLanguage: string
   sourceLanguage: string
-  isSpicyMode: boolean
+  isSpicyMode?: boolean
 } 
