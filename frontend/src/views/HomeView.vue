@@ -112,20 +112,21 @@ const handleSubmit = async () => {
 
 <style scoped>
 .container {
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
+  align-items: flex-start;
 }
 
 .form-card {
   width: 100%;
-  max-width: 800px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 :deep(.el-card__header) {
   text-align: center;
+  padding: 1.5rem;
 }
 
 :deep(.el-form-item:last-child) {
@@ -135,5 +136,21 @@ const handleSubmit = async () => {
 
 :deep(.el-form-item__label) {
   font-weight: bold;
+}
+
+:deep(.el-select) {
+  width: 100%;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 1.5rem;
+}
+
+:deep(.el-input) {
+  width: 100%;
+}
+
+:deep(.el-form) {
+  width: 100%;
 }
 </style>

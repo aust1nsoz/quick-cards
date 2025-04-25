@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import cors from '@fastify/cors'
 import dotenv from 'dotenv'
+import { generateRoutes } from './routes/generateRoutes'
 
 // Load environment variables
 dotenv.config()
@@ -16,31 +17,8 @@ server.register(cors, {
   methods: ['GET', 'POST']
 })
 
-// Define the request body type
-interface GenerateRequest {
-  deckName: string
-  words: string
-  targetLanguage: string
-  sourceLanguage: string
-  isSpicyMode: boolean
-}
-
 // Register routes
-server.post<{ Body: GenerateRequest }>('/generate', async (request, reply) => {
-  const { deckName, words, targetLanguage, sourceLanguage, isSpicyMode } = request.body
-  
-  // Log the request data
-  console.log('Received request:', {
-    deckName,
-    words,
-    targetLanguage,
-    sourceLanguage,
-    isSpicyMode
-  })
-
-  // Return a simple response
-  return { message: 'Hello from backend! Dogs and cats' }
-})
+server.register(generateRoutes, { prefix: '' })
 
 // Start the server
 const start = async () => {

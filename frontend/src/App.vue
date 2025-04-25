@@ -3,26 +3,68 @@ import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
-  <header>
-    <nav>
-      <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/about">About</RouterLink>
-    </nav>
-  </header>
+  <div class="app-container">
+    <header>
+      <div class="nav-container">
+        <nav>
+          <RouterLink to="/">Home</RouterLink>
+          <RouterLink to="/about">About</RouterLink>
+        </nav>
+      </div>
+    </header>
 
-  <RouterView />
+    <main>
+      <div class="main-container">
+        <RouterView />
+      </div>
+    </main>
+  </div>
 </template>
 
-<style scoped>
+<style>
+/* Reset default margins and padding */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 header {
-  padding: 1rem;
+  width: 100%;
   background-color: #f8f9fa;
+  padding: 1rem 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 nav {
   display: flex;
   gap: 1rem;
-  justify-content: center;
 }
 
 nav a {
@@ -40,5 +82,17 @@ nav a:hover {
 nav a.router-link-active {
   color: #42b983;
   font-weight: bold;
+}
+
+main {
+  flex: 1;
+  width: 100%;
+}
+
+.main-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 </style>
