@@ -1,23 +1,20 @@
 import { GenerateCardsRequest } from '../models/generateRequest'
 import { OpenAIAdapter } from '../adapters/openaiAdapter'
+import { parseCardsFromGptResponse, Card } from './parseCardsService'
+import { AzureTTSAdapter } from '../adapters/azureTTSAdapter'
 
-interface Translation {
-  original: string
-  translation: string
-  sourceSentence: string
-  targetSentence: string
-}
-
-interface GenerateCardsResponse {
+export interface GenerateCardsResponse {
   message: string
-  translations: Translation[]
+  cards: (Card & { audioPath: string })[]
 }
 
 export class GenerateCardsService {
   private openAIAdapter: OpenAIAdapter
+  private azureTTSAdapter: AzureTTSAdapter
 
   constructor() {
     this.openAIAdapter = new OpenAIAdapter()
+    this.azureTTSAdapter = new AzureTTSAdapter()
   }
 
   async generateAnkiCards(request: GenerateCardsRequest): Promise<GenerateCardsResponse> {
@@ -71,26 +68,24 @@ Return only the generated cards in this format.`
       maxTokens: 2048 // Adjust based on your needs
     })
 
-    console.log('Generated response:', response)
+    // Use the new parser to get cards in the desired format
+    const cards = parseCardsFromGptResponse(response)
 
-    // Parse the response into individual cards
-    const cards = response.split('\n').filter(line => line.trim().length > 0)
-    const translations: Translation[] = cards.map(card => {
-      const [front, back] = card.split(';')
-      const [original, sourceSentence] = front.split('<br><br>')
-      const [translation, targetSentence] = back.split('<br><br>')
-      
-      return {
-        original: original.trim(),
-        translation: translation.trim(),
-        sourceSentence: sourceSentence.trim(),
-        targetSentence: targetSentence.trim()
-      }
-    })
+    // Generate audio for each card's back using Azure TTS
+    const cardsWithAudio = await Promise.all(
+      cards.map(async (card) => {
+        const audioPath = await this.azureTTSAdapter.synthesizeSpeech(
+          card.back,
+          card.uuid,
+          request.targetLanguage
+        )
+        return { ...card, audioPath }
+      })
+    )
 
     return {
-      message: `Successfully generated ${translations.length} flashcards`,
-      translations
+      message: `Successfully generated ${cardsWithAudio.length} flashcards`,
+      cards: cardsWithAudio
     }
   }
 

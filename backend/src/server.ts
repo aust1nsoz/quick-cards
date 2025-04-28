@@ -1,10 +1,7 @@
+import 'dotenv/config'
 import fastify from 'fastify'
 import cors from '@fastify/cors'
-import dotenv from 'dotenv'
 import { generateCardsRoutes } from './routes/generateRoutes'
-
-// Load environment variables
-dotenv.config()
 
 // Create Fastify instance
 const server = fastify({
