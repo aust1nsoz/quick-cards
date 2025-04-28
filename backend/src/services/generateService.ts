@@ -2,10 +2,12 @@ import { GenerateCardsRequest } from '../models/generateRequest'
 import { OpenAIAdapter } from '../adapters/openaiAdapter'
 import { parseCardsFromGptResponse, Card } from './parseCardsService'
 import { AzureTTSAdapter } from '../adapters/azureTTSAdapter'
+import { createAnkiApkg } from './ankiExportService'
 
 export interface GenerateCardsResponse {
   message: string
   cards: (Card & { audioPath: string })[]
+  apkgPath: string
 }
 
 export class GenerateCardsService {
@@ -83,9 +85,13 @@ Return only the generated cards in this format.`
       })
     )
 
+    // Create the Anki .apkg file
+    const apkgPath = await createAnkiApkg(cardsWithAudio, request.deckName)
+
     return {
-      message: `Successfully generated ${cardsWithAudio.length} flashcards`,
-      cards: cardsWithAudio
+      message: `Successfully generated ${cardsWithAudio.length} flashcards and Anki deck`,
+      cards: cardsWithAudio,
+      apkgPath
     }
   }
 

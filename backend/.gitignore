@@ -22,5 +22,9 @@ yarn-error.log*
 *.sln
 *.sw? 
 
-# Ignore generated audio files
+# Ignore generated files
 audio/ 
+decks/
+
+# macOS system files
+.DS_Store

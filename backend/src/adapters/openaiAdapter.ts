@@ -68,8 +68,8 @@ export class OpenAIAdapter {
       })
 
       const content = response.choices[0]?.message?.content
-      if (typeof content !== 'string') {
-        throw new OpenAIError('No completion generated')
+      if (!content) {
+        throw new OpenAIError('No content in response from OpenAI')
       }
 
       return content.trim()
