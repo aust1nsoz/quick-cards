@@ -10,9 +10,26 @@ const inputTextName = ref(DEFAULT_DECK_NAME)
 const inputTextWords = ref('')
 const targetLanguage = ref('Portuguese (Brazil)')
 const sourceLanguage = ref('English')
-const isSpicyMode = ref(true)
 const includeReversedCards = ref(true)
 const isLoading = ref(false)
+
+const downloadFile = (content: string, filename: string) => {
+  // Convert base64 to binary
+  const binaryString = window.atob(content)
+  const bytes = new Uint8Array(binaryString.length)
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  const blob = new Blob([bytes], { type: 'application/octet-stream' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  window.URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+}
 
 const handleSubmit = async () => {
   if (!inputTextWords.value.trim()) {
@@ -22,26 +39,32 @@ const handleSubmit = async () => {
 
   isLoading.value = true
   
-  // Execution of API call upon submission 
   try {
     const response = await axios.post(API_ENDPOINTS.GENERATE_CARDS, {
       deckName: inputTextName.value.trim() || DEFAULT_DECK_NAME,
       words: inputTextWords.value.trim(),
       targetLanguage: targetLanguage.value,
       sourceLanguage: sourceLanguage.value,
-      isSpicyMode: isSpicyMode.value,
       includeReversedCards: includeReversedCards.value
+    }, {
+      responseType: 'json' // Ensure we get JSON response
     })
     
     console.log('Backend response:', response.data)
-    ElMessage.success('Request sent successfully!')
+    
+    // Download each APKG file
+    for (const file of response.data.apkgFiles) {
+      downloadFile(file.content, file.name)
+    }
+    
+    ElMessage.success('Decks generated and downloaded successfully!')
     
     // Reset form
     inputTextWords.value = ''
     inputTextName.value = DEFAULT_DECK_NAME
   } catch (error) {
     console.error('Error sending request:', error)
-    ElMessage.error('Failed to send request to backend')
+    ElMessage.error('Failed to generate decks')
   } finally {
     isLoading.value = false
   }
@@ -90,14 +113,6 @@ const handleSubmit = async () => {
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Mode">
-          <el-switch
-            v-model="isSpicyMode"
-            active-text="Spicy Mode 🌶️"
-            inactive-text=""
-          />
-        </el-form-item>
-
         <el-form-item label="Card Type">
           <el-switch
             v-model="includeReversedCards"
@@ -112,7 +127,7 @@ const handleSubmit = async () => {
             native-type="submit"
             :loading="isLoading"
           >
-            Submit
+            Generate Decks
           </el-button>
         </el-form-item>
       </el-form>

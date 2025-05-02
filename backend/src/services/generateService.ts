@@ -3,11 +3,15 @@ import { OpenAIAdapter } from '../adapters/openaiAdapter'
 import { parseCardsFromGptResponse, Card } from './parseCardsService'
 import { AzureTTSAdapter } from '../adapters/azureTTSAdapter'
 import { createAnkiApkg } from './ankiExportService'
+import fs from 'fs'
 
 export interface GenerateCardsResponse {
   message: string
   cards: (Card & { audioPath: string })[]
-  apkgPaths: string[]
+  apkgFiles: {
+    name: string
+    content: string
+  }[]
 }
 
 export class GenerateCardsService {
@@ -93,10 +97,23 @@ Return only the generated cards in this format.`
       request.includeReversedCards || false
     )
 
+    // Read the APKG files and convert to base64
+    const apkgFiles = await Promise.all(
+      apkgPaths.map(async (path) => {
+        const content = fs.readFileSync(path)
+        // Clean up the APKG file after reading it
+        fs.unlinkSync(path)
+        return {
+          name: path.split('/').pop() || 'deck.apkg',
+          content: content.toString('base64')
+        }
+      })
+    )
+
     return {
       message: `Successfully generated ${cardsWithAudio.length} flashcards and Anki decks`,
       cards: cardsWithAudio,
-      apkgPaths
+      apkgFiles
     }
   }
 
