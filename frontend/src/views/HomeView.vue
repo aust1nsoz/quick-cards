@@ -99,6 +99,9 @@ const handleSubmit = async () => {
 
         <el-form-item label="Target Language">
           <el-select v-model="targetLanguage" placeholder="Select language">
+            <el-option label="Arabic" value="Arabic" />
+            <el-option label="Mandarin Chinese" value="Mandarin Chinese" />
+            <el-option label="Japanese" value="Japanese" />
             <el-option label="Spanish" value="Spanish" />
             <el-option label="Portuguese (Brazil)" value="Portuguese (Brazil)" />
             <el-option label="English" value="English" />
@@ -107,6 +110,9 @@ const handleSubmit = async () => {
 
         <el-form-item label="Source Language">
           <el-select v-model="sourceLanguage" placeholder="Select language">
+            <el-option label="Arabic" value="Arabic" />
+            <el-option label="Mandarin Chinese" value="Mandarin Chinese" />
+            <el-option label="Japanese" value="Japanese" />
             <el-option label="Spanish" value="Spanish" />
             <el-option label="Portuguese (Brazil)" value="Portuguese (Brazil)" />
             <el-option label="English" value="English" />

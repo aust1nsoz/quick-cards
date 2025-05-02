@@ -16,9 +16,23 @@ export class AzureTTSAdapter {
     }
     // Remove all <br>, <br/>, and <br /> tags (case-insensitive)
     const safeText = text.replace(/<br\s*\/?>/gi, ' ')
+    
+    // Map language names to Azure TTS language codes
+    const languageCodeMap: Record<string, string> = {
+      'Arabic': 'ar-SA',
+      'Mandarin Chinese': 'zh-CN',
+      'Japanese': 'ja-JP',
+      'Portuguese (Brazil)': 'pt-BR',
+      'Portuguese': 'pt-BR',
+      'Spanish': 'es-MX',
+      'English': 'en-US'
+    }
+    
+    const languageCode = languageCodeMap[language] || 'en-US'
+    
     const ssml = `
-      <speak version='1.0' xml:lang='${language}'>
-        <voice xml:lang='${language}' name='${voice}'>
+      <speak version='1.0' xml:lang='${languageCode}'>
+        <voice xml:lang='${languageCode}' name='${voice}'>
           ${safeText}
         </voice>
       </speak>
