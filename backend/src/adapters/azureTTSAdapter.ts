@@ -11,7 +11,7 @@ export class AzureTTSAdapter {
     const headers = {
       'Ocp-Apim-Subscription-Key': azureTTSConfig.key,
       'Content-Type': 'application/ssml+xml',
-      'X-Microsoft-OutputFormat': 'audio-16khz-32kbitrate-mono-mp3',
+      'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
       'User-Agent': 'quick-cards-app'
     }
     // Remove all <br>, <br/>, and <br /> tags (case-insensitive)

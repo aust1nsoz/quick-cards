@@ -4,4 +4,5 @@ export interface GenerateCardsRequest {
   targetLanguage: string
   sourceLanguage: string
   isSpicyMode?: boolean
+  includeReversedCards?: boolean
 } 

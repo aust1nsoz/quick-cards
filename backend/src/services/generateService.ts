@@ -7,7 +7,7 @@ import { createAnkiApkg } from './ankiExportService'
 export interface GenerateCardsResponse {
   message: string
   cards: (Card & { audioPath: string })[]
-  apkgPath: string
+  apkgPaths: string[]
 }
 
 export class GenerateCardsService {
@@ -54,6 +54,7 @@ Formatting Rules (for Anki import):
 - Each flashcard must be on a single line.
 - No extra blank lines between cards.
 - Do not add any explanations or notes outside of the card format.
+- The term or phrase at the top of each card must **always** end in a period, even if it's a phrase.  
 
 Example Output Format:
 Sneezing.<br><br>She was sneezing so much the dog thought it was a game.;Espirrando.<br><br>Ela estava espirrando tanto que o cachorro achou que era brincadeira.
@@ -85,13 +86,17 @@ Return only the generated cards in this format.`
       })
     )
 
-    // Create the Anki .apkg file
-    const apkgPath = await createAnkiApkg(cardsWithAudio, request.deckName)
+    // Create the Anki .apkg files
+    const apkgPaths = await createAnkiApkg(
+      cardsWithAudio, 
+      request.deckName,
+      request.includeReversedCards || false
+    )
 
     return {
-      message: `Successfully generated ${cardsWithAudio.length} flashcards and Anki deck`,
+      message: `Successfully generated ${cardsWithAudio.length} flashcards and Anki decks`,
       cards: cardsWithAudio,
-      apkgPath
+      apkgPaths
     }
   }
 

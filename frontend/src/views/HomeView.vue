@@ -11,6 +11,7 @@ const inputTextWords = ref('')
 const targetLanguage = ref('Portuguese (Brazil)')
 const sourceLanguage = ref('English')
 const isSpicyMode = ref(true)
+const includeReversedCards = ref(true)
 const isLoading = ref(false)
 
 const handleSubmit = async () => {
@@ -28,7 +29,8 @@ const handleSubmit = async () => {
       words: inputTextWords.value.trim(),
       targetLanguage: targetLanguage.value,
       sourceLanguage: sourceLanguage.value,
-      isSpicyMode: isSpicyMode.value
+      isSpicyMode: isSpicyMode.value,
+      includeReversedCards: includeReversedCards.value
     })
     
     console.log('Backend response:', response.data)
@@ -92,6 +94,14 @@ const handleSubmit = async () => {
           <el-switch
             v-model="isSpicyMode"
             active-text="Spicy Mode 🌶️"
+            inactive-text=""
+          />
+        </el-form-item>
+
+        <el-form-item label="Card Type">
+          <el-switch
+            v-model="includeReversedCards"
+            active-text="Include reversed cards"
             inactive-text=""
           />
         </el-form-item>

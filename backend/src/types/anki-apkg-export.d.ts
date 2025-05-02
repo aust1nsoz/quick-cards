@@ -9,6 +9,7 @@ declare module 'anki-apkg-export' {
 
   interface CardOptions {
     tags?: string[];
+    fields?: Record<string, string>;
   }
 
   class AnkiExport {
