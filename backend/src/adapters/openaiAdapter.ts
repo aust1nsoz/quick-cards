@@ -61,7 +61,7 @@ export class OpenAIAdapter {
       ]
 
       const response = await this.client.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4.1-nano',
         messages,
         max_tokens: maxTokens,
         temperature: temperature,

@@ -36,37 +36,43 @@ export class GenerateCardsService {
     const words = request.words.split('\n').map(word => word.trim()).filter(word => word.length > 0)
 
     // Create the prompt with all instructions
-    const fullPrompt = `You are a language tutor creating flashcards for language learners.
+    const fullPrompt = `You are a language tutor generating flashcards for language learners in a format ready for Anki import.
 
-Follow this setup:
+Language Configuration:
 - Source Language: ${request.sourceLanguage}
 - Target Language: ${request.targetLanguage}
 
 Instructions:
-1. For each word provided, translate it into the target language, respecting the form given (infinitive, conjugated, etc.). If ambiguous, default to the infinitive form.
-2. If the word has multiple meanings, use the most common meaning unless specific context is provided.
-3. On the front of the card, show:
-   - The word (in its original source language)
-   - An example sentence in the source language using the word naturally
-4. On the back of the card, show:
-   - The translation of the word into the target language
-   - The translation of the example sentence into the target language
+
+1. For each term or phrase in the list below:
+   - Translate it into the target language, preserving its grammatical form (infinitive, conjugated, etc.).  
+   - If ambiguous, default to the infinitive form.
+   - Use the most common meaning, unless context implies otherwise.
+2. Create an example sentence in the source language that uses the term naturally and in context.
+3. Translate the sentence into the target language.
+4. If the input word or phrase has a spelling mistake, fix it.
 
 Formatting Rules (for Anki import):
-- Use <br><br> to separate the word from the sentence within each field.
-- Use a single ; character to separate front and back fields.
+
 - Each flashcard must be on a single line.
-- No extra blank lines between cards.
-- Do not add any explanations or notes outside of the card format.
-- The term or phrase at the top of each card must **always** end in a period, even if it's a phrase.  
+- The front field should contain:
+  - The translation of the term or phrase, also ending with a period.
+  - Followed by <br><br>
+  - Then the translated sentence.
+- The back field should contain:
+  - The source term or phrase in the source language, ending with a period.
+  - Followed by <br><br>
+  - Then the example sentence in the source language.
+- Separate the front and back fields with a single semicolon ;
+- No extra line breaks, no additional explanations, no markdown, and no bullet points.
 
-Example Output Format:
-Sneezing.<br><br>She was sneezing so much the dog thought it was a game.;Espirrando.<br><br>Ela estava espirrando tanto que o cachorro achou que era brincadeira.
+Example Output:
+Espirrando.<br><br>Ela estava espirrando tanto que o cachorro achou que era brincadeira.;Sneezing.<br><br>She was sneezing so much the dog thought it was a game.
 
-Here are the words to process:
+Word List:
 ${words.join('\n')}
 
-Return only the generated cards in this format.`
+Return only the list of flashcards, following the exact format described above.`
 
     // Get translations and example sentences in one API call
     const response = await this.openAIAdapter.generateCompletion({
@@ -75,14 +81,17 @@ Return only the generated cards in this format.`
       maxTokens: 2048 // Adjust based on your needs
     })
 
+    // Log the raw GPT response
+    console.log('Raw GPT Response:', response)
+
     // Use the new parser to get cards in the desired format
     const cards = parseCardsFromGptResponse(response)
 
-    // Generate audio for each card's back using Azure TTS
+    // Generate audio for each card's front using Azure TTS
     const cardsWithAudio = await Promise.all(
       cards.map(async (card) => {
         const audioPath = await this.azureTTSAdapter.synthesizeSpeech(
-          card.back,
+          card.front,
           card.uuid,
           request.targetLanguage
         )
