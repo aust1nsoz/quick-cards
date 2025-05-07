@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
-import { API_ENDPOINTS } from '@/config'
+import { API_ENDPOINTS } from '../config'
 
 const DEFAULT_DECK_NAME = 'my_new_anki_deck'
 const inputTextName = ref(DEFAULT_DECK_NAME)
