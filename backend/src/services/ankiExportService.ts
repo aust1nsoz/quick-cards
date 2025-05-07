@@ -25,7 +25,7 @@ export async function createAnkiApkg(
   }
 
   // Save Target -> Source deck
-  const targetToSourcePath = path.join(outputDir, `${deckName.replace(/\s+/g, '_')}_target_to_source.apkg`)
+  const targetToSourcePath = path.join(outputDir, `${deckName.replace(/\s+/g, '_')}_Target.apkg`)
   const targetToSourceZip = await targetToSourceDeck.save()
   fs.writeFileSync(targetToSourcePath, Buffer.from(targetToSourceZip))
   filePaths.push(targetToSourcePath)
@@ -43,7 +43,7 @@ export async function createAnkiApkg(
     }
 
     // Save Source -> Target deck
-    const sourceToTargetPath = path.join(outputDir, `${deckName.replace(/\s+/g, '_')}_source_to_target.apkg`)
+    const sourceToTargetPath = path.join(outputDir, `${deckName.replace(/\s+/g, '_')}_Source.apkg`)
     const sourceToTargetZip = await sourceToTargetDeck.save()
     fs.writeFileSync(sourceToTargetPath, Buffer.from(sourceToTargetZip))
     filePaths.push(sourceToTargetPath)

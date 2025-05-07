@@ -4,12 +4,12 @@ import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config'
 
-const DEFAULT_DECK_NAME = 'my_new_anki_deck'
+const DEFAULT_DECK_NAME = 'Flash Forge'
 const inputTextName = ref(DEFAULT_DECK_NAME)
 const inputTextWords = ref('')
 const targetLanguage = ref('Portuguese (Brazil)')
 const sourceLanguage = ref('English')
-const includeReversedCards = ref(true)
+const includeReversedCards = ref(false)
 const isLoading = ref(false)
 
 const downloadFile = (content: string, filename: string) => {
@@ -74,7 +74,7 @@ const handleSubmit = async () => {
   <div class="container">
     <el-card class="form-card">
       <template #header>
-        <h2>Words for New Anki Cards</h2>
+        <h2>Flash Forge</h2>
       </template>
       
       <el-form @submit.prevent="handleSubmit" label-position="top">
