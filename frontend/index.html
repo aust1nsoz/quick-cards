@@ -5,6 +5,18 @@
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
+    <script>
+      // Only load Plausible in production
+      if (window.location.hostname === 'flashforge.pro') {
+        const script = document.createElement('script');
+        script.defer = true;
+        script.setAttribute('data-domain', 'flashforge.pro');
+        script.src = 'https://plausible.io/js/script.file-downloads.revenue.tagged-events.js';
+        document.head.appendChild(script);
+        
+        window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) };
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>
