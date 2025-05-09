@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config'
@@ -11,6 +11,10 @@ const targetLanguage = ref('Portuguese (Brazil)')
 const sourceLanguage = ref('English')
 const includeReversedCards = ref(false)
 const isLoading = ref(false)
+const MAX_LINES = 50
+
+const lineCount = computed(() => inputTextWords.value ? inputTextWords.value.split('\n').length : 0)
+const isOverLineLimit = computed(() => lineCount.value > MAX_LINES)
 
 const downloadFile = (content: string, filename: string) => {
   // Convert base64 to binary
@@ -33,6 +37,12 @@ const downloadFile = (content: string, filename: string) => {
 const handleSubmit = async () => {
   if (!inputTextWords.value.trim()) {
     ElMessage.warning('Please enter some words')
+    return
+  }
+
+  const lines = inputTextWords.value.split('\n')
+  if (lines.length > MAX_LINES) {
+    ElMessage.warning(`You can only enter up to ${MAX_LINES} lines.`)
     return
   }
 
@@ -68,6 +78,14 @@ const handleSubmit = async () => {
     isLoading.value = false
   }
 }
+
+watch(inputTextWords, (newVal, oldVal) => {
+  const lines = newVal.split('\n')
+  if (lines.length > MAX_LINES) {
+    inputTextWords.value = lines.slice(0, MAX_LINES).join('\n')
+    ElMessage.warning(`You can only enter up to ${MAX_LINES} lines.`)
+  }
+})
 </script>
 
 <template>
@@ -94,6 +112,14 @@ const handleSubmit = async () => {
             placeholder="Enter your words here..."
             resize="none"
           />
+          <div style="margin-top: 0.5rem; font-size: 0.95em;">
+            <span :style="{ color: isOverLineLimit ? 'red' : '#888' }">
+              {{ lineCount }} / {{ MAX_LINES }} lines
+            </span>
+            <span v-if="isOverLineLimit" style="color: red; margin-left: 1em;">
+              You can only enter up to {{ MAX_LINES }} lines.
+            </span>
+          </div>
         </el-form-item>
 
         <el-form-item label="Target Language">
@@ -131,6 +157,8 @@ const handleSubmit = async () => {
             type="primary" 
             native-type="submit"
             :loading="isLoading"
+            :disabled="isOverLineLimit"
+            :style="isOverLineLimit ? 'opacity: 0.5; pointer-events: none;' : ''"
           >
             Generate Decks
           </el-button>
