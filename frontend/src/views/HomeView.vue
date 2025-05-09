@@ -79,7 +79,7 @@ const handleSubmit = async () => {
   }
 }
 
-watch(inputTextWords, (newVal, oldVal) => {
+watch(inputTextWords, (newVal) => {
   const lines = newVal.split('\n')
   if (lines.length > MAX_LINES) {
     inputTextWords.value = lines.slice(0, MAX_LINES).join('\n')
