@@ -126,7 +126,6 @@ watch(inputTextWords, (newVal) => {
             :rows="10"
             placeholder="Hello
 Thank you
-Please
 Sim
 Paracer - to seem   
 Não - not this time
