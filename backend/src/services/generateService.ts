@@ -66,8 +66,17 @@ Formatting Rules (for Anki import):
 - Separate the front and back fields with a single semicolon ;
 - No extra line breaks, no additional explanations, no markdown, and no bullet points.
 
+Example Input:
+sneezing 
+ganhar - I got a prize 
+parecer - to seem 
+pexie
+
 Example Output:
-Espirrando.<br><br>Ela estava espirrando tanto que o cachorro achou que era brincadeira.;Sneezing.<br><br>She was sneezing so much the dog thought it was a game.
+Espirrar.<br><br>Ela começou a espirrar por causa do pólen.;Sneezing.<br><br>She started sneezing because of the pollen.
+Ganhar.<br><br>Eu ganhei um prêmio na escola.;I got a prize.<br><br>I got a prize at school.
+Parecer.<br><br>Ele parece cansado hoje.;To seem.<br><br>He seems tired today.
+Peixe.<br><br>O peixe está nadando no aquário.;Fish.<br><br>The fish is swimming in the aquarium.
 
 Word List:
 ${words.join('\n')}
