@@ -20,8 +20,8 @@ export async function createAnkiApkg(
   for (const card of cards) {
     const audioFileName = path.basename(card.audioPath)
     targetToSourceDeck.addMedia(audioFileName, fs.readFileSync(card.audioPath))
-    const backWithAudio = `${card.back}<br>[sound:${audioFileName}]`
-    targetToSourceDeck.addCard(card.front, backWithAudio)
+    const frontWithAudio = `${card.front}<br>[sound:${audioFileName}]`
+    targetToSourceDeck.addCard(frontWithAudio, card.back)
   }
 
   // Save Target -> Source deck
@@ -38,8 +38,12 @@ export async function createAnkiApkg(
     for (const card of cards) {
       const audioFileName = path.basename(card.audioPath)
       sourceToTargetDeck.addMedia(audioFileName, fs.readFileSync(card.audioPath))
-      const backWithAudio = `${card.back}<br>[sound:${audioFileName}]`
-      sourceToTargetDeck.addCard(backWithAudio, card.front)
+      // const backWithAudio = `${card.back}<br>[sound:${audioFileName}]`
+      // sourceToTargetDeck.addCard(card.front, backWithAudio)
+      const frontWithAudio = `${card.front}<br>[sound:${audioFileName}]`
+      sourceToTargetDeck.addCard(card.back, frontWithAudio)
+      
+      // sourceToTargetDeck.addCard(backWithAudio, card.front)
     }
 
     // Save Source -> Target deck
