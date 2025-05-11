@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config'
+import { InfoFilled } from '@element-plus/icons-vue'
 
 const DEFAULT_DECK_NAME = 'Flash Forge'
 const inputTextName = ref(DEFAULT_DECK_NAME)
@@ -104,7 +105,21 @@ watch(inputTextWords, (newVal) => {
           />
         </el-form-item>
 
-        <el-form-item label="Words">
+        <el-form-item>
+          <template #label>
+            <span style="font-weight: bold;">
+              Words
+            </span>
+            <el-tooltip 
+              raw-content
+              content="- Enter up to 50 lines (words or phrases).<br>- Each line will generate a separate flashcard.<br>- You can write in either the source or target language.<br>- Optionally, add a translation or example sentence to provide context for each card separated by a dash. E.g.<br>&nbsp;&nbsp;&nbsp;&nbsp;- To Swim - Nadar<br>&nbsp;&nbsp;&nbsp;&nbsp;- Ganhar - I got a prize"
+              placement="right-start"
+            >
+              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </template>
           <el-input
             v-model="inputTextWords"
             type="textarea"
@@ -112,9 +127,10 @@ watch(inputTextWords, (newVal) => {
             placeholder="Hello
 Thank you
 Please
-Goodbye 
-Yes
-No"
+Sim
+Paracer - to seem   
+Não - not this time
+Claro que - Claro que eu posso "
             resize="none"
           />
           <div style="margin-top: 0.5rem; font-size: 0.95em;">
@@ -128,6 +144,20 @@ No"
         </el-form-item>
 
         <el-form-item label="Target Language">
+          <template #label>
+            <span style="font-weight: bold;">
+              Target Language
+            </span>
+            <el-tooltip 
+              raw-content
+              content="The language you want to learn or practice. Flashcards will be generated in this language."
+              placement="right-start"
+            >
+              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </template>
           <el-select v-model="targetLanguage" placeholder="Select language">
             <el-option label="Arabic" value="Arabic" />
             <el-option label="Mandarin Chinese" value="Mandarin Chinese" />
@@ -139,6 +169,20 @@ No"
         </el-form-item>
 
         <el-form-item label="Source Language">
+          <template #label>
+            <span style="font-weight: bold;">
+              Source Language
+            </span>
+            <el-tooltip 
+              raw-content
+              content="The language you are translating from."
+              placement="right-start"
+            >
+              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </template>
           <el-select v-model="sourceLanguage" placeholder="Select language">
             <el-option label="Arabic" value="Arabic" />
             <el-option label="Mandarin Chinese" value="Mandarin Chinese" />
@@ -150,6 +194,20 @@ No"
         </el-form-item>
 
         <el-form-item label="Card Type">
+          <template #label>
+            <span style="font-weight: bold;">
+              Card Type
+            </span>
+            <el-tooltip 
+              raw-content
+              content="By default, the front of each flashcard shows the word in your target language, and the back shows the translation in your source language.<br>When you enable Reverse Cards, a second set of cards is created with the sides flipped—showing the source language on the front and the target language on the back."
+              placement="right-start"
+            >
+              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
+                <InfoFilled />
+              </el-icon>
+            </el-tooltip>
+          </template>
           <el-switch
             v-model="includeReversedCards"
             active-text="Include reversed cards"
