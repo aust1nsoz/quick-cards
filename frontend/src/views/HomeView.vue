@@ -109,7 +109,12 @@ watch(inputTextWords, (newVal) => {
             v-model="inputTextWords"
             type="textarea"
             :rows="10"
-            placeholder="Enter your words here..."
+            placeholder="Hello
+Thank you
+Please
+Goodbye 
+Yes
+No"
             resize="none"
           />
           <div style="margin-top: 0.5rem; font-size: 0.95em;">
