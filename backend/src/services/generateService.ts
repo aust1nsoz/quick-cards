@@ -5,6 +5,67 @@ import { AzureTTSAdapter } from '../adapters/azureTTSAdapter'
 import { createAnkiApkg } from './ankiExportService'
 import fs from 'fs'
 
+// Rate limiter class to handle TTS API calls
+class RateLimiter {
+  private queue: (() => Promise<void>)[] = []
+  private processing = false
+  private readonly requestsPerSecond: number
+  private readonly interval: number
+  private readonly maxRetries: number
+  private readonly initialBackoffMs: number
+
+  constructor(requestsPerSecond: number, maxRetries = 3, initialBackoffMs = 1000) {
+    this.requestsPerSecond = requestsPerSecond
+    this.interval = 1000 / requestsPerSecond
+    this.maxRetries = maxRetries
+    this.initialBackoffMs = initialBackoffMs
+  }
+
+  async add<T>(fn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const result = await this.executeWithRetry(fn)
+          resolve(result)
+        } catch (error) {
+          reject(error)
+        }
+      })
+      this.process()
+    })
+  }
+
+  private async executeWithRetry<T>(fn: () => Promise<T>, retryCount = 0): Promise<T> {
+    try {
+      return await fn()
+    } catch (error: any) {
+      // Check if it's a 429 error
+      if (error?.response?.status === 429 && retryCount < this.maxRetries) {
+        const backoffTime = this.initialBackoffMs * Math.pow(2, retryCount)
+        console.log(`Rate limit hit, retrying in ${backoffTime}ms (attempt ${retryCount + 1}/${this.maxRetries})`)
+        await new Promise(resolve => setTimeout(resolve, backoffTime))
+        return this.executeWithRetry(fn, retryCount + 1)
+      }
+      throw error
+    }
+  }
+
+  private async process() {
+    if (this.processing) return
+    this.processing = true
+
+    while (this.queue.length > 0) {
+      const fn = this.queue.shift()
+      if (fn) {
+        await fn()
+        await new Promise(resolve => setTimeout(resolve, this.interval))
+      }
+    }
+
+    this.processing = false
+  }
+}
+
 export interface GenerateCardsResponse {
   message: string
   cards: (Card & { audioPath: string })[]
@@ -17,10 +78,12 @@ export interface GenerateCardsResponse {
 export class GenerateCardsService {
   private openAIAdapter: OpenAIAdapter
   private azureTTSAdapter: AzureTTSAdapter
+  private ttsRateLimiter: RateLimiter
 
   constructor() {
     this.openAIAdapter = new OpenAIAdapter()
     this.azureTTSAdapter = new AzureTTSAdapter()
+    this.ttsRateLimiter = new RateLimiter(5, 3, 2000) // 5 requests per second, max 3 retries, 2s initial backoff
   }
 
   async generateAnkiCards(request: GenerateCardsRequest): Promise<GenerateCardsResponse> {
@@ -96,13 +159,15 @@ Return only the list of flashcards, following the exact format described above.`
     // Use the new parser to get cards in the desired format
     const cards = parseCardsFromGptResponse(response)
 
-    // Generate audio for each card's front using Azure TTS
+    // Generate audio for each card's front using Azure TTS with rate limiting
     const cardsWithAudio = await Promise.all(
       cards.map(async (card) => {
-        const audioPath = await this.azureTTSAdapter.synthesizeSpeech(
-          card.front,
-          card.uuid,
-          request.targetLanguage
+        const audioPath = await this.ttsRateLimiter.add(() => 
+          this.azureTTSAdapter.synthesizeSpeech(
+            card.front,
+            card.uuid,
+            request.targetLanguage
+          )
         )
         return { ...card, audioPath }
       })
