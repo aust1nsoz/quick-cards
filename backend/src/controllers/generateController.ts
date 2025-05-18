@@ -18,4 +18,14 @@ export class GenerateCardsController {
       return reply.status(500).send({ error: 'Internal server error' })
     }
   }
+
+  async handlePreviewCard(request: FastifyRequest<{ Body: { input: string, targetLanguage: string, sourceLanguage: string } }>, reply: FastifyReply) {
+    try {
+      const result = await this.generateService.previewCard(request.body)
+      return reply.send(result)
+    } catch (error) {
+      console.error('Error processing preview card request:', error)
+      return reply.status(500).send({ error: 'Internal server error' })
+    }
+  }
 } 

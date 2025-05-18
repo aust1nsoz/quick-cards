@@ -86,24 +86,12 @@ export class GenerateCardsService {
     this.ttsRateLimiter = new RateLimiter(5, 10, 2000) // 5 requests per second, max 3 retries, 2s initial backoff
   }
 
-  async generateAnkiCards(request: GenerateCardsRequest): Promise<GenerateCardsResponse> {
-    // Log the request data
-    console.log('Processing cards generation request:', {
-      deckName: request.deckName,
-      words: request.words,
-      targetLanguage: request.targetLanguage,
-      sourceLanguage: request.sourceLanguage
-    })
-
-    // Split the input words into an array and clean them
-    const words = request.words.split('\n').map(word => word.trim()).filter(word => word.length > 0)
-
-    // Create the prompt with all instructions
+  private async generateCardsWithGPT(words: string[], sourceLanguage: string, targetLanguage: string): Promise<Card[]> {
     const fullPrompt = `You are a language tutor generating flashcards for language learners in a format ready for Anki import.
 
 Language Configuration:
-- Source Language: ${request.sourceLanguage}
-- Target Language: ${request.targetLanguage}
+- Source Language: ${sourceLanguage}
+- Target Language: ${targetLanguage}
 
 Instructions:
 
@@ -148,51 +136,65 @@ ${words.join('\n')}
 
 Return only the list of flashcards, following the exact format described above.`
 
-    // Get translations and example sentences in one API call
     const response = await this.openAIAdapter.generateCompletion({
       prompt: fullPrompt,
       temperature: 0.7,
-      maxTokens: 2048 // Adjust based on your needs
+      maxTokens: 2048
     })
 
-    // Log the raw GPT response
     console.log('Raw GPT Response:', response)
+    return parseCardsFromGptResponse(response)
+  }
 
-    // Use the new parser to get cards in the desired format
-    const cards = parseCardsFromGptResponse(response)
-
-    // Generate audio for each card's front using Azure TTS with rate limiting
-    const cardsWithAudio = await Promise.all(
+  private async generateAudioForCards(cards: Card[], targetLanguage: string): Promise<(Card & { audioPath: string })[]> {
+    return Promise.all(
       cards.map(async (card) => {
         const audioPath = await this.ttsRateLimiter.add(() => 
           this.azureTTSAdapter.synthesizeSpeech(
             card.front,
             card.uuid,
-            request.targetLanguage
+            targetLanguage
           )
         )
         return { ...card, audioPath }
       })
     )
+  }
 
-    // Create the Anki .apkg files
+  private async createApkgFiles(cardsWithAudio: (Card & { audioPath: string })[], deckName: string, includeReversedCards: boolean): Promise<{ name: string, content: string }[]> {
     const apkgPaths = await createAnkiApkg(
       cardsWithAudio, 
-      request.deckName,
-      request.includeReversedCards || false
+      deckName,
+      includeReversedCards
     )
 
-    // Read the APKG files and convert to base64
-    const apkgFiles = await Promise.all(
+    return Promise.all(
       apkgPaths.map(async (path) => {
         const content = fs.readFileSync(path)
-        // Clean up the APKG file after reading it
         fs.unlinkSync(path)
         return {
           name: path.split('/').pop() || 'deck.apkg',
           content: content.toString('base64')
         }
       })
+    )
+  }
+
+  async generateAnkiCards(request: GenerateCardsRequest): Promise<GenerateCardsResponse> {
+    console.log('Processing cards generation request:', {
+      deckName: request.deckName,
+      words: request.words,
+      targetLanguage: request.targetLanguage,
+      sourceLanguage: request.sourceLanguage
+    })
+
+    const words = request.words.split('\n').map(word => word.trim()).filter(word => word.length > 0)
+    const cards = await this.generateCardsWithGPT(words, request.sourceLanguage, request.targetLanguage)
+    const cardsWithAudio = await this.generateAudioForCards(cards, request.targetLanguage)
+    const apkgFiles = await this.createApkgFiles(
+      cardsWithAudio, 
+      request.deckName,
+      request.includeReversedCards || false
     )
 
     return {
@@ -207,5 +209,18 @@ Return only the list of flashcards, following the exact format described above.`
     // This is where you would implement the external API call
     console.log('Calling external API with request:', request)
     // Example: await axios.post('https://api.example.com', request)
+  }
+
+  async previewCard(request: { input: string, targetLanguage: string, sourceLanguage: string }) {
+    try {
+      const firstLine = request.input.split('\n')[0].trim()
+      const cards = await this.generateCardsWithGPT([firstLine], request.sourceLanguage, request.targetLanguage)
+      return {
+        card: cards[0]
+      }
+    } catch (error) {
+      console.error('Error generating preview card:', error)
+      throw error
+    }
   }
 } 

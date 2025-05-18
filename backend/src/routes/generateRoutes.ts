@@ -8,4 +8,8 @@ export async function generateCardsRoutes(fastify: FastifyInstance) {
   fastify.post<{ Body: GenerateCardsRequest }>('/generate-cards', (request, reply) => {
     return generateCardsController.handleGenerateCards(request, reply)
   })
+
+  fastify.post('/preview-card', {
+    handler: generateCardsController.handlePreviewCard.bind(generateCardsController)
+  })
 } 
