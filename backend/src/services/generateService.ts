@@ -83,7 +83,7 @@ export class GenerateCardsService {
   constructor() {
     this.openAIAdapter = new OpenAIAdapter()
     this.azureTTSAdapter = new AzureTTSAdapter()
-    this.ttsRateLimiter = new RateLimiter(5, 3, 2000) // 5 requests per second, max 3 retries, 2s initial backoff
+    this.ttsRateLimiter = new RateLimiter(5, 10, 2000) // 5 requests per second, max 3 retries, 2s initial backoff
   }
 
   async generateAnkiCards(request: GenerateCardsRequest): Promise<GenerateCardsResponse> {
