@@ -134,12 +134,14 @@ sneezing
 ganhar - I got a prize 
 parecer - to seem 
 pexie
+I run fast
 
 Example Output:
 Espirrar.<br><br>Ela começou a espirrar por causa do pólen.;Sneezing.<br><br>She started sneezing because of the pollen.
 Ganhar.<br><br>Eu ganhei um prêmio na escola.;I got a prize.<br><br>I got a prize at school.
 Parecer.<br><br>Ele parece cansado hoje.;To seem.<br><br>He seems tired today.
 Peixe.<br><br>O peixe está nadando no aquário.;Fish.<br><br>The fish is swimming in the aquarium.
+Eu corro rápido.<br><br>Eu corro rápido todos os dias.;I run fast.<br><br>I run fast every day.
 
 Word List:
 ${words.join('\n')}
