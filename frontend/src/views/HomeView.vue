@@ -64,9 +64,13 @@ watch(inputTextWords, (newVal) => {
     ElMessage.warning(`You can only enter up to ${MAX_LINES} lines.`)
   }
 
-  // Reset preview state if input changes after first preview
+  // Only reset preview if the first line changes
   if (hasPreviewed.value) {
-    previewCard.value = null
+    const oldFirstLine = inputTextWords.value.split('\n')[0].trim()
+    const newFirstLine = newVal.split('\n')[0].trim()
+    if (oldFirstLine !== newFirstLine) {
+      previewCard.value = null
+    }
   }
 
   // Trigger preview if we have enough lines
@@ -127,7 +131,7 @@ const handleSubmit = async () => {
       sourceLanguage: sourceLanguage.value,
       includeReversedCards: includeReversedCards.value
     }, {
-      responseType: 'json' // Ensure we get JSON response
+      responseType: 'json'
     })
     
     console.log('Backend response:', response.data)
@@ -139,9 +143,11 @@ const handleSubmit = async () => {
     
     ElMessage.success('Decks generated and downloaded successfully!')
     
-    // Reset form
+    // Reset form and preview state
     inputTextWords.value = ''
     inputTextName.value = DEFAULT_DECK_NAME
+    previewCard.value = null
+    hasPreviewed.value = false
   } catch (error) {
     console.error('Error sending request:', error)
     ElMessage.error('Failed to generate decks')
@@ -208,8 +214,16 @@ Claro que - Claro que eu posso "
         <div v-if="previewCard" class="preview-section">
           <h3>Preview Card</h3>
           <div class="preview-card">
-            <div class="preview-front">{{ formatCardText(previewCard.front) }}</div>
-            <div class="preview-back">{{ formatCardText(previewCard.back) }}</div>
+            <div class="preview-sides">
+              <div class="preview-front">
+                <div class="preview-label">Front</div>
+                {{ formatCardText(previewCard.front) }}
+              </div>
+              <div class="preview-back">
+                <div class="preview-label">Back</div>
+                {{ formatCardText(previewCard.back) }}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -366,13 +380,24 @@ Claro que - Claro que eu posso "
   margin-top: 0.5rem;
 }
 
+.preview-sides {
+  display: flex;
+  gap: 1rem;
+}
+
 .preview-front,
 .preview-back {
+  flex: 1;
   padding: 0.5rem;
-  margin-bottom: 0.5rem;
   background-color: #f5f7fa;
   border-radius: 4px;
   white-space: pre-line;
+}
+
+.preview-label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #606266;
 }
 
 .preview-front {
