@@ -4,6 +4,12 @@ import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config'
 import { InfoFilled } from '@element-plus/icons-vue'
+import debounce from 'lodash/debounce'
+
+interface PreviewCard {
+  front: string
+  back: string
+}
 
 const DEFAULT_DECK_NAME = 'Flash Forge'
 const inputTextName = ref(DEFAULT_DECK_NAME)
@@ -14,8 +20,68 @@ const includeReversedCards = ref(false)
 const isLoading = ref(false)
 const MAX_LINES = 50
 
+// Preview state
+const hasPreviewed = ref(false)
+const previewCard = ref<PreviewCard | null>(null)
+const isGeneratingPreview = ref(false)
+
 const lineCount = computed(() => inputTextWords.value ? inputTextWords.value.split('\n').length : 0)
 const isOverLineLimit = computed(() => lineCount.value > MAX_LINES)
+const shouldShowPreviewButton = computed(() => {
+  const lines = inputTextWords.value.split('\n').filter(line => line.trim().length > 0)
+  return lines.length >= 2 && hasPreviewed.value
+})
+
+// Debounced preview function
+const debouncedPreview = debounce(async (input: string) => {
+  if (isGeneratingPreview.value) return
+  
+  const lines = input.split('\n').filter(line => line.trim().length > 0)
+  if (lines.length < 2) return
+
+  isGeneratingPreview.value = true
+  try {
+    const response = await axios.post(API_ENDPOINTS.PREVIEW_CARD, {
+      input,
+      targetLanguage: targetLanguage.value,
+      sourceLanguage: sourceLanguage.value
+    })
+    previewCard.value = response.data.card
+    hasPreviewed.value = true
+  } catch (error) {
+    console.error('Error generating preview:', error)
+    ElMessage.error('Failed to generate preview')
+  } finally {
+    isGeneratingPreview.value = false
+  }
+}, 1000)
+
+// Watch for input changes
+watch(inputTextWords, (newVal) => {
+  const lines = newVal.split('\n')
+  if (lines.length > MAX_LINES) {
+    inputTextWords.value = lines.slice(0, MAX_LINES).join('\n')
+    ElMessage.warning(`You can only enter up to ${MAX_LINES} lines.`)
+  }
+
+  // Reset preview state if input changes after first preview
+  if (hasPreviewed.value) {
+    previewCard.value = null
+  }
+
+  // Trigger preview if we have enough lines
+  const nonEmptyLines = lines.filter(line => line.trim().length > 0)
+  if (nonEmptyLines.length >= 2 && !hasPreviewed.value) {
+    debouncedPreview(newVal)
+  }
+})
+
+// Manual preview trigger
+const triggerPreview = () => {
+  if (inputTextWords.value.trim()) {
+    debouncedPreview(inputTextWords.value)
+  }
+}
 
 const downloadFile = (content: string, filename: string) => {
   // Convert base64 to binary
@@ -33,6 +99,10 @@ const downloadFile = (content: string, filename: string) => {
   a.click()
   window.URL.revokeObjectURL(url)
   document.body.removeChild(a)
+}
+
+const formatCardText = (text: string) => {
+  return text.replace(/<br>/g, '\n')
 }
 
 const handleSubmit = async () => {
@@ -79,14 +149,6 @@ const handleSubmit = async () => {
     isLoading.value = false
   }
 }
-
-watch(inputTextWords, (newVal) => {
-  const lines = newVal.split('\n')
-  if (lines.length > MAX_LINES) {
-    inputTextWords.value = lines.slice(0, MAX_LINES).join('\n')
-    ElMessage.warning(`You can only enter up to ${MAX_LINES} lines.`)
-  }
-})
 </script>
 
 <template>
@@ -141,6 +203,25 @@ Claro que - Claro que eu posso "
             </span>
           </div>
         </el-form-item>
+
+        <!-- Preview section -->
+        <div v-if="previewCard" class="preview-section">
+          <h3>Preview Card</h3>
+          <div class="preview-card">
+            <div class="preview-front">{{ formatCardText(previewCard.front) }}</div>
+            <div class="preview-back">{{ formatCardText(previewCard.back) }}</div>
+          </div>
+        </div>
+
+        <el-button 
+          v-if="shouldShowPreviewButton"
+          type="primary"
+          @click="triggerPreview"
+          :loading="isGeneratingPreview"
+          style="margin-bottom: 1rem;"
+        >
+          Preview Again
+        </el-button>
 
         <el-form-item label="Target Language">
           <template #label>
@@ -272,5 +353,33 @@ Claro que - Claro que eu posso "
 
 :deep(.el-form) {
   width: 100%;
+}
+
+.preview-section {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.preview-card {
+  margin-top: 0.5rem;
+}
+
+.preview-front,
+.preview-back {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  white-space: pre-line;
+}
+
+.preview-front {
+  border-left: 4px solid #409eff;
+}
+
+.preview-back {
+  border-left: 4px solid #67c23a;
 }
 </style>
