@@ -56,7 +56,7 @@ export class OpenAIAdapter {
       ]
 
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4.1-nano',
+        model: 'gpt-4.1-mini',
         messages,
         max_tokens: maxTokens,
         temperature: temperature,
