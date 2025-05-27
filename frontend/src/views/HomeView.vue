@@ -159,39 +159,25 @@ const handleSubmit = async () => {
 
 <template>
   <div class="container">
-    <el-card class="form-card">
-      <template #header>
-        <h2>Flash Forge</h2>
-      </template>
-      
-      <el-form @submit.prevent="handleSubmit" label-position="top">
-        <el-form-item label="Deck Name">
-          <el-input
+    <div class="card">
+      <form @submit.prevent="handleSubmit">
+        <div class="form-section">
+          <label class="label" for="deckName">Deck Name</label>
+          <input
+            id="deckName"
             v-model="inputTextName"
+            class="input"
             placeholder="Enter deck name (optional)"
-            clearable
+            autocomplete="off"
           />
-        </el-form-item>
-
-        <el-form-item>
-          <template #label>
-            <span style="font-weight: bold;">
-              Words
-            </span>
-            <el-tooltip 
-              raw-content
-              content="- Enter up to 50 lines (words or phrases).<br>- Each line will generate a separate flashcard.<br>- You can write in either the source or target language.<br>- Optionally, add a translation or example sentence to provide context for each card separated by a dash. E.g.<br>&nbsp;&nbsp;&nbsp;&nbsp;- To Swim - Nadar<br>&nbsp;&nbsp;&nbsp;&nbsp;- Ganhar - I got a prize"
-              placement="right-start"
-            >
-              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </template>
-          <el-input
+        </div>
+        <div class="form-section">
+          <label class="label" for="words">Words <span class="info-icon" title="Each line will generate a separate flashcard. Optionally, add a translation or example sentence to provide context for each card separated by a dash.">ⓘ</span></label>
+          <textarea
+            id="words"
             v-model="inputTextWords"
-            type="textarea"
-            :rows="10"
+            class="textarea"
+            rows="8"
             placeholder="Hello
 Thank you
 Sim
@@ -200,128 +186,66 @@ Não - not this time
 Claro que - Claro que eu posso "
             resize="none"
           />
-          <div style="margin-top: 0.5rem; font-size: 0.95em;">
-            <span :style="{ color: isOverLineLimit ? 'red' : '#888' }">
-              {{ lineCount }} / {{ MAX_LINES }} lines
-            </span>
-            <span v-if="isOverLineLimit" style="color: red; margin-left: 1em;">
-              You can only enter up to {{ MAX_LINES }} lines.
-            </span>
-          </div>
-        </el-form-item>
-
-        <!-- Preview section -->
-        <div v-if="previewCard" class="preview-section">
-          <h3>Preview Card</h3>
-          <div class="preview-card">
-            <div class="preview-sides">
-              <div class="preview-front">
-                <div class="preview-label">Front</div>
-                {{ formatCardText(previewCard.front) }}
-              </div>
-              <div class="preview-back">
-                <div class="preview-label">Back</div>
-                {{ formatCardText(previewCard.back) }}
-              </div>
+          <div class="line-count">{{ lineCount }} / {{ MAX_LINES }} lines</div>
+        </div>
+        <div v-if="previewCard" class="preview-card-section card">
+          <div class="preview-title">Preview Card</div>
+          <div class="preview-row">
+            <div class="preview-side">
+              <div class="preview-label">Front</div>
+              <div class="preview-content">{{ formatCardText(previewCard.front) }}</div>
+            </div>
+            <div class="preview-side">
+              <div class="preview-label">Back</div>
+              <div class="preview-content">{{ formatCardText(previewCard.back) }}</div>
             </div>
           </div>
+          <button type="button" class="preview-btn" @click="triggerPreview" :disabled="isGeneratingPreview">
+            &#8635; Preview Again
+          </button>
         </div>
-
-        <el-button 
-          v-if="shouldShowPreviewButton"
-          type="primary"
-          @click="triggerPreview"
-          :loading="isGeneratingPreview"
-          style="margin-bottom: 1rem;"
-        >
-          Preview Again
-        </el-button>
-
-        <el-form-item label="Target Language">
-          <template #label>
-            <span style="font-weight: bold;">
-              Target Language
-            </span>
-            <el-tooltip 
-              raw-content
-              content="The language you want to learn or practice. Flashcards will be generated in this language."
-              placement="right-start"
-            >
-              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </template>
-          <el-select v-model="targetLanguage" placeholder="Select language">
-            <el-option label="Arabic" value="Arabic" />
-            <el-option label="Mandarin Chinese" value="Mandarin Chinese" />
-            <el-option label="Japanese" value="Japanese" />
-            <el-option label="Spanish" value="Spanish" />
-            <el-option label="Portuguese (Brazil)" value="Portuguese (Brazil)" />
-            <el-option label="English" value="English" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="Source Language">
-          <template #label>
-            <span style="font-weight: bold;">
-              Source Language
-            </span>
-            <el-tooltip 
-              raw-content
-              content="The language you are translating from."
-              placement="right-start"
-            >
-              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </template>
-          <el-select v-model="sourceLanguage" placeholder="Select language">
-            <el-option label="Arabic" value="Arabic" />
-            <el-option label="Mandarin Chinese" value="Mandarin Chinese" />
-            <el-option label="Japanese" value="Japanese" />
-            <el-option label="Spanish" value="Spanish" />
-            <el-option label="Portuguese (Brazil)" value="Portuguese (Brazil)" />
-            <el-option label="English" value="English" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="Card Type">
-          <template #label>
-            <span style="font-weight: bold;">
-              Card Type
-            </span>
-            <el-tooltip 
-              raw-content
-              content="By default, the front of each flashcard shows the word in your target language, and the back shows the translation in your source language.<br>When you enable Reverse Cards, a second set of cards is created with the sides flipped—showing the source language on the front and the target language on the back."
-              placement="right-start"
-            >
-              <el-icon style="margin-left: 6px; cursor: pointer; vertical-align: middle;">
-                <InfoFilled />
-              </el-icon>
-            </el-tooltip>
-          </template>
-          <el-switch
-            v-model="includeReversedCards"
-            active-text="Include reversed cards"
-            inactive-text=""
-          />
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button 
-            type="primary" 
-            native-type="submit"
-            :loading="isLoading"
-            :disabled="isOverLineLimit"
-            :style="isOverLineLimit ? 'opacity: 0.5; pointer-events: none;' : ''"
-          >
-            Generate Decks
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+        <div class="settings-row card">
+          <div class="settings-top">
+            <div class="settings-col">
+              <label class="label">Target Language <span class="info-icon" title="The language you want to learn or practice.">ⓘ</span></label>
+              <select v-model="targetLanguage" class="select">
+                <option>Portuguese (Brazil)</option>
+                <option>Spanish</option>
+                <option>Japanese</option>
+                <option>Mandarin Chinese</option>
+                <option>Arabic</option>
+                <option>English</option>
+              </select>
+            </div>
+            <div class="settings-col">
+              <label class="label">Source Language <span class="info-icon" title="The language you are translating from.">ⓘ</span></label>
+              <select v-model="sourceLanguage" class="select">
+                <option>English</option>
+                <option>Portuguese (Brazil)</option>
+                <option>Spanish</option>
+                <option>Japanese</option>
+                <option>Mandarin Chinese</option>
+                <option>Arabic</option>
+              </select>
+            </div>
+          </div>
+          <div class="settings-bottom">
+            <label class="label">Card Type <span class="info-icon" title="Include reversed cards.">ⓘ</span></label>
+            <label class="switch">
+              <input type="checkbox" v-model="includeReversedCards" />
+              <span class="slider"></span>
+              <span class="switch-label">Include reversed cards</span>
+            </label>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="generate-btn" type="submit" :disabled="isLoading || isOverLineLimit">
+            <span v-if="isLoading">Generating...</span>
+            <span v-else>&#128295; Generate Decks</span>
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -333,78 +257,207 @@ Claro que - Claro que eu posso "
   align-items: flex-start;
 }
 
-.form-card {
+.card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 600px;
 }
 
-:deep(.el-card__header) {
-  text-align: center;
-  padding: 1.5rem;
+.card:first-child {
+  margin-top: 0;
 }
 
-:deep(.el-form-item:last-child) {
-  margin-bottom: 0;
-  text-align: center;
-}
-
-:deep(.el-form-item__label) {
-  font-weight: bold;
-}
-
-:deep(.el-select) {
-  width: 100%;
-}
-
-:deep(.el-form-item) {
+.form-section {
   margin-bottom: 1.5rem;
 }
 
-:deep(.el-input) {
+.label {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  color: #222;
+}
+
+.input, .textarea, .select {
   width: 100%;
+  border: 1.5px solid #f0cfa0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  background: #fff8e4;
+  transition: border 0.2s;
+}
+.input:focus, .textarea:focus, .select:focus {
+  border: 1.5px solid #f2994a;
+  outline: none;
 }
 
-:deep(.el-form) {
-  width: 100%;
+.textarea {
+  min-height: 135px;
+  resize: vertical;
 }
 
-.preview-section {
-  margin: 1rem 0;
-  padding: 1rem;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+.line-count {
+  font-size: 0.95em;
+  color: #bfa76a;
+  margin-top: 0.2rem;
 }
 
-.preview-card {
-  margin-top: 0.5rem;
+.info-icon {
+  font-size: 1em;
+  margin-left: 0.3em;
+  cursor: pointer;
+  color: #bfa76a;
 }
 
-.preview-sides {
+.preview-card-section {
+  margin-bottom: 2rem;
+  background: #fff8e4;
+  box-shadow: 0 2px 12px 0 rgba(242, 153, 74, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+}
+
+.preview-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #222;
+}
+
+.preview-row {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.preview-front,
-.preview-back {
+.preview-side {
   flex: 1;
-  padding: 0.5rem;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  white-space: pre-line;
+  background: #fff7ed;
+  border: 1.5px solid #f0cfa0;
+  border-radius: 10px;
+  padding: 1rem;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
 }
 
 .preview-label {
-  font-weight: bold;
+  font-weight: 600;
+  color: #bfa76a;
   margin-bottom: 0.5rem;
-  color: #606266;
 }
 
-.preview-front {
-  border-left: 4px solid #409eff;
+.preview-content {
+  white-space: pre-line;
+  color: #222;
+  font-size: 1.05rem;
 }
 
-.preview-back {
-  border-left: 4px solid #67c23a;
+.preview-btn {
+  background: #f2994a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+.preview-btn:disabled {
+  background: #f7cfa0;
+  cursor: not-allowed;
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  background: #fff8e4;
+  box-shadow: 0 2px 12px 0 rgba(242, 153, 74, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+}
+.settings-top {
+  display: flex;
+  gap: 1.5rem;
+}
+.settings-bottom {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.switch input[type="checkbox"] {
+  display: none;
+}
+.slider {
+  width: 36px;
+  height: 20px;
+  background: #f0cfa0;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.switch input:checked + .slider {
+  background: #f2994a;
+}
+.slider:before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.switch input:checked + .slider:before {
+  transform: translateX(16px);
+}
+.switch-label {
+  font-size: 0.98rem;
+  color: #bfa76a;
+  margin-left: 0.5rem;
+}
+
+.action-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+.generate-btn {
+  background: #f2994a;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px 0 rgba(242, 153, 74, 0.10);
+  transition: background 0.2s;
+}
+.generate-btn:disabled {
+  background: #f7cfa0;
+  cursor: not-allowed;
 }
 </style>
