@@ -22,7 +22,7 @@ import logo from './assets/flash-forge-logo.png'
 .app-bg {
   min-height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, #fff8e4 0%, #fbeee0 100%);
+  background: linear-gradient(135deg, #fef6e3 0%, #fbeee0 100%);
   font-family: 'Montserrat', Arial, sans-serif;
 }
 

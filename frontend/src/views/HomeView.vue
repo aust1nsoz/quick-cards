@@ -241,7 +241,7 @@ Claro que - Claro que eu posso "
         <div class="action-row">
           <button class="generate-btn" type="submit" :disabled="isLoading || isOverLineLimit">
             <span v-if="isLoading">Generating...</span>
-            <span v-else>&#128295; Generate Decks</span>
+            <span v-else>&#9889; Generate Decks &#9889;</span>
           </button>
         </div>
       </form>
@@ -290,7 +290,7 @@ Claro que - Claro que eu posso "
   padding: 0.75rem 1rem;
   font-size: 1rem;
   margin-bottom: 0.25rem;
-  background: #fff8e4;
+  background: #fef6e3;
   transition: border 0.2s;
 }
 .input:focus, .textarea:focus, .select:focus {
@@ -318,7 +318,7 @@ Claro que - Claro que eu posso "
 
 .preview-card-section {
   margin-bottom: 2rem;
-  background: #fff8e4;
+  background: #fef6e3;
   box-shadow: 0 2px 12px 0 rgba(242, 153, 74, 0.08);
   border-radius: 16px;
   padding: 1.5rem 2rem;
@@ -382,7 +382,7 @@ Claro que - Claro que eu posso "
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 2rem;
-  background: #fff8e4;
+  background: #fef6e3;
   box-shadow: 0 2px 12px 0 rgba(242, 153, 74, 0.08);
   border-radius: 16px;
   padding: 1.5rem 2rem;
