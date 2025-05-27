@@ -12,4 +12,8 @@ export async function generateCardsRoutes(fastify: FastifyInstance) {
   fastify.post('/preview-card', {
     handler: generateCardsController.handlePreviewCard.bind(generateCardsController)
   })
+
+  fastify.post('/review-inputs', {
+    handler: generateCardsController.handleReviewUserInputs.bind(generateCardsController)
+  })
 } 

@@ -28,4 +28,14 @@ export class GenerateCardsController {
       return reply.status(500).send({ error: 'Internal server error' })
     }
   }
+
+  async handleReviewUserInputs(request: FastifyRequest<{ Body: { input: string, targetLanguage: string, sourceLanguage: string } }>, reply: FastifyReply) {
+    try {
+      const result = await this.generateService.reviewUserInputsProvideFeedback(request.body)
+      return reply.send(result)
+    } catch (error) {
+      console.error('Error processing review request:', error)
+      return reply.status(500).send({ error: 'Internal server error' })
+    }
+  }
 } 

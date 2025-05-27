@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import { APIError } from 'openai/error'
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+import { config } from '../config'
 
 // Types for our adapter methods
 export interface TranslationRequest {
@@ -28,19 +29,13 @@ export class OpenAIError extends Error {
 }
 
 export class OpenAIAdapter {
-  private client: OpenAI
+  private openai: OpenAI
 
   constructor() {
-    const apiKey = process.env.OPENAI_API_KEY
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is not set')
-    }
-
-    this.client = new OpenAI({
-      apiKey: apiKey,
-      // Optional: configure timeouts, max retries, etc.
-      timeout: 10000, // 10 seconds
-      maxRetries: 3,
+    this.openai = new OpenAI({
+      apiKey: config.openai.apiKey,
+      timeout: 60000, // Increase timeout to 60 seconds
+      maxRetries: 3
     })
   }
 
@@ -60,7 +55,7 @@ export class OpenAIAdapter {
         }
       ]
 
-      const response = await this.client.chat.completions.create({
+      const response = await this.openai.chat.completions.create({
         model: 'gpt-4.1-nano',
         messages,
         max_tokens: maxTokens,

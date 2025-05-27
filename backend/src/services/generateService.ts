@@ -87,7 +87,12 @@ export class GenerateCardsService {
   }
 
   private async generateCardsWithGPT(words: string[], sourceLanguage: string, targetLanguage: string): Promise<Card[]> {
-    const fullPrompt = `You are a language tutor generating flashcards for language learners in a format ready for Anki import.
+    const maxRetries = 3
+    let lastError: any
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const fullPrompt = `You are a language tutor generating flashcards for language learners in a format ready for Anki import.
 
 Language Configuration:
 - Source Language: ${sourceLanguage}
@@ -136,14 +141,27 @@ ${words.join('\n')}
 
 Return only the list of flashcards, following the exact format described above.`
 
-    const response = await this.openAIAdapter.generateCompletion({
-      prompt: fullPrompt,
-      temperature: 0.7,
-      maxTokens: 2048
-    })
+        const response = await this.openAIAdapter.generateCompletion({
+          prompt: fullPrompt,
+          temperature: 0.7,
+          maxTokens: 2048
+        })
 
-    console.log('Raw GPT Response:', response)
-    return parseCardsFromGptResponse(response)
+        console.log('Raw GPT Response:', response)
+        return parseCardsFromGptResponse(response)
+      } catch (error) {
+        console.error(`Attempt ${attempt} failed:`, error)
+        lastError = error
+        
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000 // Exponential backoff
+          console.log(`Retrying in ${delay}ms...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+      }
+    }
+
+    throw lastError
   }
 
   private async generateAudioForCards(cards: Card[], targetLanguage: string): Promise<(Card & { audioPath: string })[]> {
@@ -220,6 +238,80 @@ Return only the list of flashcards, following the exact format described above.`
       }
     } catch (error) {
       console.error('Error generating preview card:', error)
+      throw error
+    }
+  }
+
+  async reviewUserInputsProvideFeedback(request: { input: string, targetLanguage: string, sourceLanguage: string }) {
+    try {
+      const lines = request.input.split('\n').map(line => line.trim()).filter(line => line.length > 0)
+      
+      const prompt = `You are validating user input for a flashcard generator app. The user submits a list of prompts, one per line. Each line should follow one of the supported input formats listed below. Your job is to help the user correct any lines that don't follow these formats, so they can get the best possible results. Users need to match a format. It doesn't need to be clear which format. Be encouraging and helpful.
+
+Supported Prompt Templates (examples included):
+
+1. a single word in source or target. 
+   Example: 
+- fish
+- oi
+
+2. word in target - used in sentence (target)  
+   Example: ficar - ficar vermelha
+
+3. word in source - used in sentence (source)
+    Example: cat - the cat is not very big
+
+4. short phrase in target  or source
+   Examples: 
+- não liga
+- Go away
+- fresh fish 
+- bem te vi
+
+5. conjugated verb in (source)  
+   Example: i run
+
+6. conjugated verb (target)  
+   Example: corro
+
+Unsupported Template:
+
+- word in target - used in sentence (source)  
+    Example: ficar - to become red
+
+Instructions:
+
+You will receive a list of user-submitted lines. For each line:
+
+- Only give feedback on problematic lines (those that do not match any valid template).
+- For each problematic line:
+  - Gently explain that the format may not generate a flashcard correctly.
+  - Suggest a revised version using one of the supported templates.
+  - Prefer suggestions that include more context, not less.
+  - Only give **one** clear suggestion per line.
+
+If all lines are valid:
+- Respond only with this exact phrase:
+'All lines are valid.'
+- Do not include any extra text, commentary, emojis, markdown formatting, or encouragement.
+- Your entire response must be exactly: 'All lines are valid.' (no quotes).
+
+If you say anything else when all lines are valid, it will be considered a mistake.
+
+User Input:
+${request.input}.`
+      
+      const response = await this.openAIAdapter.generateCompletion({
+        prompt,
+        temperature: 0.7,
+        maxTokens: 2048
+      })
+
+      return {
+        feedback: response
+      }
+    } catch (error) {
+      console.error('Error reviewing user inputs:', error)
       throw error
     }
   }
