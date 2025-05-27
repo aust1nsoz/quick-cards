@@ -3,7 +3,6 @@ import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config'
-import { InfoFilled } from '@element-plus/icons-vue'
 import debounce from 'lodash/debounce'
 
 interface PreviewCard {
@@ -27,10 +26,6 @@ const isGeneratingPreview = ref(false)
 
 const lineCount = computed(() => inputTextWords.value ? inputTextWords.value.split('\n').length : 0)
 const isOverLineLimit = computed(() => lineCount.value > MAX_LINES)
-const shouldShowPreviewButton = computed(() => {
-  const lines = inputTextWords.value.split('\n').filter(line => line.trim().length > 0)
-  return lines.length >= 2 && hasPreviewed.value
-})
 
 // Debounced preview function
 const debouncedPreview = debounce(async (input: string) => {
