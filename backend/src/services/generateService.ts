@@ -83,7 +83,7 @@ export class GenerateCardsService {
   constructor() {
     this.openAIAdapter = new OpenAIAdapter()
     this.azureTTSAdapter = new AzureTTSAdapter()
-    this.ttsRateLimiter = new RateLimiter(100, 10, 2000) // 3 requests per second, max 10 retries, 2s initial backoff
+    this.ttsRateLimiter = new RateLimiter(3, 10, 2000) // 3 requests per second, max 10 retries, 2s initial backoff
   }
 
   private async generateCardsWithGPT(words: string[], sourceLanguage: string, targetLanguage: string): Promise<Card[]> {

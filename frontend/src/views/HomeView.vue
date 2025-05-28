@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 import { API_ENDPOINTS } from '../config'
@@ -26,6 +26,40 @@ const isGeneratingPreview = ref(false)
 
 const lineCount = computed(() => inputTextWords.value ? inputTextWords.value.split('\n').length : 0)
 const isOverLineLimit = computed(() => lineCount.value > MAX_LINES)
+
+const progress = ref(0)
+let progressTimer: number | null = null
+
+const progressDuration = computed(() => {
+  // 25s base + 1s per line
+  return 5000 + 2000 * lineCount.value
+})
+
+watch(isLoading, (val) => {
+  if (val) {
+    progress.value = 0
+    const duration = progressDuration.value
+    const start = Date.now()
+    progressTimer = window.setInterval(() => {
+      const elapsed = Date.now() - start
+      progress.value = Math.min(100, (elapsed / duration) * 100)
+      if (progress.value >= 100) {
+        clearInterval(progressTimer!)
+        progressTimer = null
+      }
+    }, 100)
+  } else {
+    progress.value = 0
+    if (progressTimer) {
+      clearInterval(progressTimer)
+      progressTimer = null
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (progressTimer) clearInterval(progressTimer)
+})
 
 // Debounced preview function
 const debouncedPreview = debounce(async (input: string) => {
@@ -255,6 +289,12 @@ Claro que - Claro que eu posso "
             <span v-else>&#9889; Generate Decks &#9889;</span>
           </button>
         </div>
+        <div v-if="isLoading" class="progress-bar-container">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+          </div>
+          <div class="progress-bar-label">Generating cards... ({{ Math.ceil(progressDuration / 1000) }}s estimated)</div>
+        </div>
       </form>
     </div>
   </div>
@@ -470,5 +510,33 @@ Claro que - Claro que eu posso "
 .generate-btn:disabled {
   background: #f7cfa0;
   cursor: not-allowed;
+}
+
+.progress-bar-container {
+  margin-top: 1.2rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.progress-bar-bg {
+  width: 100%;
+  max-width: 400px;
+  height: 12px;
+  background: #f0cfa0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f2994a 0%, #f7b267 100%);
+  border-radius: 8px;
+  transition: width 0.2s linear;
+}
+.progress-bar-label {
+  font-size: 0.98rem;
+  color: #bfa76a;
+  margin-top: 0.1rem;
 }
 </style>
