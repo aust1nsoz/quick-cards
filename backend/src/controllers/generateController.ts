@@ -13,8 +13,11 @@ export class GenerateCardsController {
     try {
       const result = await this.generateService.generateAnkiCards(request.body)
       return reply.send(result)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing generate cards request:', error)
+      if (error?.message === 'AZURE_TTS_RATE_LIMIT') {
+        return reply.status(429).send({ error: 'AZURE_TTS_RATE_LIMIT' })
+      }
       return reply.status(500).send({ error: 'Internal server error' })
     }
   }

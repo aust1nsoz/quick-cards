@@ -83,7 +83,7 @@ export class GenerateCardsService {
   constructor() {
     this.openAIAdapter = new OpenAIAdapter()
     this.azureTTSAdapter = new AzureTTSAdapter()
-    this.ttsRateLimiter = new RateLimiter(5, 10, 2000) // 5 requests per second, max 3 retries, 2s initial backoff
+    this.ttsRateLimiter = new RateLimiter(100, 10, 2000) // 3 requests per second, max 10 retries, 2s initial backoff
   }
 
   private async generateCardsWithGPT(words: string[], sourceLanguage: string, targetLanguage: string): Promise<Card[]> {
@@ -165,18 +165,26 @@ Return only the list of flashcards, following the exact format described above.`
   }
 
   private async generateAudioForCards(cards: Card[], targetLanguage: string): Promise<(Card & { audioPath: string })[]> {
-    return Promise.all(
-      cards.map(async (card) => {
-        const audioPath = await this.ttsRateLimiter.add(() => 
-          this.azureTTSAdapter.synthesizeSpeech(
-            card.front,
-            card.uuid,
-            targetLanguage
+    try {
+      return await Promise.all(
+        cards.map(async (card) => {
+          const audioPath = await this.ttsRateLimiter.add(() => 
+            this.azureTTSAdapter.synthesizeSpeech(
+              card.front,
+              card.uuid,
+              targetLanguage
+            )
           )
-        )
-        return { ...card, audioPath }
-      })
-    )
+          return { ...card, audioPath }
+        })
+      )
+    } catch (error: any) {
+      // If the error is a rate limit or too many retries, throw a recognizable error
+      if (error?.response?.status === 429 || error?.message?.includes('Rate limit')) {
+        throw new Error('AZURE_TTS_RATE_LIMIT')
+      }
+      throw error
+    }
   }
 
   private async createApkgFiles(cardsWithAudio: (Card & { audioPath: string })[], deckName: string, includeReversedCards: boolean): Promise<{ name: string, content: string }[]> {

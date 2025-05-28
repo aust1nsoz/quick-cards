@@ -45,7 +45,11 @@ const debouncedPreview = debounce(async (input: string) => {
     hasPreviewed.value = true
   } catch (error) {
     console.error('Error generating preview:', error)
-    ElMessage.error('Failed to generate preview')
+    ElMessage.error({
+      message: 'Failed to generate preview',
+      duration: 0,
+      showClose: true
+    })
   } finally {
     isGeneratingPreview.value = false
   }
@@ -143,9 +147,21 @@ const handleSubmit = async () => {
     inputTextName.value = DEFAULT_DECK_NAME
     previewCard.value = null
     hasPreviewed.value = false
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending request:', error)
-    ElMessage.error('Failed to generate decks')
+    if (error?.response?.data?.error === 'AZURE_TTS_RATE_LIMIT') {
+      ElMessage.error({
+        message: 'Flash Forge is experiencing high loads at this moment. Please try again later.',
+        duration: 0,
+        showClose: true
+      })
+    } else {
+      ElMessage.error({
+        message: 'Failed to generate decks',
+        duration: 0,
+        showClose: true
+      })
+    }
   } finally {
     isLoading.value = false
   }
